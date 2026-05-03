@@ -8,31 +8,35 @@ const Footer = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch real page views from CountAPI
-    const namespace = 'dhruvil-portfolio'
-    const key = 'page-views'
-    
-    // Use the correct CountAPI endpoint with error handling
-    fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('CountAPI request failed')
-        return res.json()
-      })
-      .then((data) => {
-        setPageViews(data.value)
-        setLoading(false)
-      })
-      .catch((err) => {
-        console.warn('Page counter unavailable:', err.message)
-        // Fallback: hide counter if API fails
+    // Use a simple, reliable counter
+    const fetchPageViews = async () => {
+      try {
+        // Using a simple counter API that works reliably
+        const namespace = 'dhruvil-portfolio'
+        const key = 'page-visits'
+        
+        // Try the counter API
+        const response = await fetch(
+          `https://api.counterapi.dev/v1/${namespace}/${key}/up`,
+          { method: 'GET' }
+        )
+        
+        if (response.ok) {
+          const data = await response.json()
+          setPageViews(data.count)
+        } else {
+          // If API fails, don't show counter
+          setPageViews(null)
+        }
+      } catch (error) {
+        console.warn('Page counter unavailable')
         setPageViews(null)
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+
+    fetchPageViews()
   }, [])
 
   return (
