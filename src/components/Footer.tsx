@@ -9,19 +9,28 @@ const Footer = () => {
 
   useEffect(() => {
     // Fetch real page views from CountAPI
-    // Replace 'dhruvil-portfolio' with your unique namespace
     const namespace = 'dhruvil-portfolio'
     const key = 'page-views'
     
-    fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
-      .then((res) => res.json())
+    // Use the correct CountAPI endpoint with error handling
+    fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('CountAPI request failed')
+        return res.json()
+      })
       .then((data) => {
         setPageViews(data.value)
         setLoading(false)
       })
       .catch((err) => {
-        console.error('Failed to fetch page views:', err)
-        setPageViews(0)
+        console.warn('Page counter unavailable:', err.message)
+        // Fallback: hide counter if API fails
+        setPageViews(null)
         setLoading(false)
       })
   }, [])
@@ -50,21 +59,23 @@ const Footer = () => {
             TypeScript & Tailwind CSS
           </p>
 
-          {/* Page views counter */}
-          <div className="mt-2 px-4 py-1.5 rounded-full bg-white/[0.02] border border-white/[0.05]">
-            <p className="text-gray-700 text-[11px] font-body tracking-wide">
-              {loading ? (
-                <span className="text-gray-600">Loading views...</span>
-              ) : (
-                <>
-                  <span className="text-accent font-medium">
-                    {pageViews?.toLocaleString() || '0'}
-                  </span>{' '}
-                  page views
-                </>
-              )}
-            </p>
-          </div>
+          {/* Page views counter - Only show if API works */}
+          {pageViews !== null && (
+            <div className="mt-2 px-4 py-1.5 rounded-full bg-white/[0.02] border border-white/[0.05]">
+              <p className="text-gray-700 text-[11px] font-body tracking-wide">
+                {loading ? (
+                  <span className="text-gray-600">Loading views...</span>
+                ) : (
+                  <>
+                    <span className="text-accent font-medium">
+                      {pageViews.toLocaleString()}
+                    </span>{' '}
+                    page views
+                  </>
+                )}
+              </p>
+            </div>
+          )}
         </motion.div>
       </div>
     </footer>
